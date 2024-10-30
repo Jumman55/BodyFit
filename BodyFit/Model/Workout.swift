@@ -7,17 +7,25 @@
 
 import Foundation
 
-// Model representing a workout routine
-struct WorkoutModel: Identifiable, Hashable {
-    let id = UUID()               // Unique identifier for each workout
-    var title: String             // Title of the workout routine
-    var exercises: [Exercise]     // List of exercises in the workout
+struct Workout: Codable, Identifiable {
+    let id: UUID
+    var date: String // e.g., "2024-01-01"
+    var type: String // e.g., "Push", "Pull", "Leg"
+    var exercises: [Exercise]
     
-    // Nested model representing an individual exercise
-    struct Exercise: Identifiable, Hashable {
-        let id = UUID()           // Unique identifier for each exercise
-        var name: String          // Name of the exercise
-        var sets: Int             // Number of sets for the exercise
-        var reps: Int             // Number of reps per set
+    struct Exercise: Codable, Identifiable {
+        let id: UUID
+        var name: String  // e.g., "Bench Press"
+        var sets: Int
+        var reps: Int
+        var weight: Double // weight lifted per set in kg or lbs
+    }
+    
+    // Initializer to set up a workout with sample data
+    init(id: UUID = UUID(), date: String, type: String, exercises: [Exercise]) {
+        self.id = id
+        self.date = date
+        self.type = type
+        self.exercises = exercises
     }
 }

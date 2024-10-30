@@ -1,0 +1,41 @@
+[
+    {
+        "id": "0001A2B3-C4D5-6789-ABCD-1234567890AB",
+        "date": "2024-01-01",
+        "type": "Push",
+        "exercises": [
+            {"id": "0001E1B3-C4D5-6789-ABCD-1234567890EF", "name": "Bench Press", "sets": 4, "reps": 8, "weight": 80.0},
+            {"id": "0001E2B3-C4D5-6789-ABCD-1234567890EF", "name": "Shoulder Press", "sets": 3, "reps": 10, "weight": 50.0},
+            {"id": "0001E3B3-C4D5-6789-ABCD-1234567890EF", "name": "Tricep Extensions", "sets": 3, "reps": 12, "weight": 30.0}
+        ]
+    },
+    {
+        "id": "0002A2B3-C4D5-6789-ABCD-1234567890CD",
+        "date": "2024-01-03",
+        "type": "Pull",
+        "exercises": [
+            {"id": "0002E3B3-C4D5-6789-ABCD-1234567890EF", "name": "Deadlift", "sets": 4, "reps": 6, "weight": 100.0},
+            {"id": "0002E4B3-C4D5-6789-ABCD-1234567890EF", "name": "Pull-Ups", "sets": 3, "reps": 10, "weight": 0.0},
+            {"id": "0002E5B3-C4D5-6789-ABCD-1234567890EF", "name": "Bicep Curls", "sets": 3, "reps": 12, "weight": 20.0}
+        ]
+    },
+    {
+        "id": "0003A2B3-C4D5-6789-ABCD-1234567890EF",
+        "date": "2024-01-05",
+        "type": "Legs",
+        "exercises": [
+            {"id": "0003E1B3-C4D5-6789-ABCD-1234567890EF", "name": "Squats", "sets": 4, "reps": 10, "weight": 90.0},
+            {"id": "0003E2B3-C4D5-6789-ABCD-1234567890EF", "name": "Lunges", "sets": 3, "reps": 12, "weight": 40.0},
+            {"id": "0003E3B3-C4D5-6789-ABCD-1234567890EF", "name": "Leg Press", "sets": 3, "reps": 10, "weight": 120.0}
+        ]
+    },
+    {
+        "id": "0004A2B3-C4D5-6789-ABCD-1234567890EF",
+        "date": "2024-01-07",
+        "type": "Cardio",
+        "exercises": [
+            {"id": "0004E1B3-C4D5-6789-ABCD-1234567890EF", "name": "Running", "sets": 1, "reps": 1, "weight": 0.0},
+            {"id": "0004E2B3-C4D5-6789-ABCD-1234567890EF", "name": "Cycling", "sets": 1, "reps": 1, "weight": 0.0}
+        ]
+    }
+]
