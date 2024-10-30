@@ -9,12 +9,13 @@ import SwiftUI
 
 struct DietTrackingView: View {
     @StateObject private var viewModel = DietViewModel()
+    @State private var showingAddEntryView = false  // State variable to control sheet presentation
 
     var body: some View {
         NavigationView {
             List(viewModel.dietEntries) { entry in
                 Section(header: Text("Date: \(entry.date)")) {
-                    ForEach(entry.meals) { meal in
+                    ForEach(entry.meals, id: \.id) { meal in
                         VStack(alignment: .leading) {
                             Text(meal.name)
                                 .font(.headline)
@@ -32,6 +33,18 @@ struct DietTrackingView: View {
             }
             .listStyle(GroupedListStyle())
             .navigationTitle("Diet Tracker")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        showingAddEntryView = true  // Show the sheet
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddEntryView) {  // Present AddDietEntryView as a sheet
+                AddDietEntryView(viewModel: viewModel)
+            }
         }
     }
 }

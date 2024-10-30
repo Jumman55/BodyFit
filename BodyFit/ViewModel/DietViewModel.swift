@@ -6,32 +6,42 @@
 //
 
 import Foundation
+import RealmSwift
 
 class DietViewModel: ObservableObject {
-    @Published var dietEntries: [DietEntry] = []
+    private let realm = try! Realm()  // Initialize Realm instance
     
+    @Published var dietEntries: [DietEntry] = []  // Store DietEntry data in an array for SwiftUI
+
     init() {
-        loadDietEntries()
+        loadDietEntriesFromRealm()
     }
     
-    private func loadDietEntries() {
-        guard let url = Bundle.main.url(forResource: "DietEntry", withExtension: "json") else {
-            print("DietEntry.json file not found.")
-            return
+    // Load data from Realm
+    private func loadDietEntriesFromRealm() {
+        let entries = realm.objects(DietEntry.self).sorted(byKeyPath: "date", ascending: true)
+        self.dietEntries = Array(entries)  // Convert Results to Array for SwiftUI compatibility
+    }
+
+    // Add a new DietEntry to Realm
+    func addDietEntry(date: String, calorieTarget: Int, meals: [Meal]) {
+        let newDietEntry = DietEntry()
+        newDietEntry.date = date
+        newDietEntry.calorieTarget = calorieTarget
+        newDietEntry.meals.append(objectsIn: meals)  // Add meals to the DietEntry
+        
+        try! realm.write {
+            realm.add(newDietEntry)
         }
         
-        do {
-            let data = try Data(contentsOf: url)
-            let loadedEntries = try JSONDecoder().decode([DietEntry].self, from: data)
-            self.dietEntries = loadedEntries
-            print("Diet entries loaded successfully.")
-        } catch {
-            print("Error loading diet entries: \(error)")
-        }
+        loadDietEntriesFromRealm()  // Refresh data after adding
     }
     
-    // Example function to calculate total calories for a specific date
+    // Calculate total calories for a specific date
     func totalCalories(for date: String) -> Int {
-        return dietEntries.first(where: { $0.date == date })?.meals.reduce(0) { $0 + $1.calories } ?? 0
+        if let entry = dietEntries.first(where: { $0.date == date }) {
+            return entry.meals.reduce(0) { $0 + $1.calories }
+        }
+        return 0
     }
 }

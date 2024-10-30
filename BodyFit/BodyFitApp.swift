@@ -11,7 +11,8 @@ import SwiftUI
 struct BodyFitApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainDashboardView() // Set MainDashboardView as the initial view
         }
+        
     }
 }
