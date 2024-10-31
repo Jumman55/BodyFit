@@ -8,103 +8,139 @@
 import SwiftUI
 
 struct AddDietEntryView: View {
-    @Environment(\.presentationMode) var presentationMode
     @ObservedObject var viewModel: DietViewModel
+    @State private var selectedMealType = "Breakfast"
+    @State private var mealDescription = ""
+    @State private var calories = ""
+    @State private var protein = ""
+    @State private var carbs = ""
+    @State private var fats = ""
+    @Environment(\.dismiss) private var dismiss
 
-    @State private var date = Date()
-    @State private var calorieTarget = ""
-    @State private var meals: [Meal] = []
-    
-    // Input fields for a new meal
-    @State private var mealName = ""
-    @State private var calories = ""    // Changed to @State and String
-    @State private var protein = ""     // Changed to @State and String
-    @State private var carbs = ""       // Changed to @State and String
-    @State private var fats = ""        // Changed to @State and String
+    private let mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack", "Evening Snack"]
 
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Date and Calorie Target")) {
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                    TextField("Calorie Target", text: $calorieTarget)
-                        .keyboardType(.numberPad)
-                }
+        ZStack {
+            // Background Gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(hex: "#0F2027"),
+                    Color(hex: "#203A43"),
+                    Color(hex: "#2C5364")
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-                Section(header: Text("Add a Meal")) {
-                    TextField("Meal Name", text: $mealName)
-                    TextField("Calories", text: $calories)
-                        .keyboardType(.numberPad)
-                    TextField("Protein (g)", text: $protein)
-                        .keyboardType(.decimalPad)
-                    TextField("Carbs (g)", text: $carbs)
-                        .keyboardType(.decimalPad)
-                    TextField("Fats (g)", text: $fats)
-                        .keyboardType(.decimalPad)
-                    Button("Add Meal") {
-                        addMeal()
-                    }
+            VStack(spacing: 20) {
+                Text("Add Diet Entry")
+                    .font(.largeTitle)
+                    .bold()
+                    .foregroundColor(.white)
+                    .padding(.top, 30)
+
+                VStack(spacing: 15) {
+                    GlassPicker(selection: $selectedMealType, options: mealTypes, title: "Meal Type")
+                    GlassTextField(placeholder: "Meal Description", text: $mealDescription)
+                    GlassTextField(placeholder: "Calories", text: $calories)
+                    GlassTextField(placeholder: "Protein (g)", text: $protein)
+                    GlassTextField(placeholder: "Carbs (g)", text: $carbs)
+                    GlassTextField(placeholder: "Fats (g)", text: $fats)
                 }
-                
-                Section(header: Text("Meals")) {
-                    ForEach(meals, id: \.id) { meal in
-                        VStack(alignment: .leading) {
-                            Text(meal.name)
-                            Text("Calories: \(meal.calories), Protein: \(meal.protein)g, Carbs: \(meal.carbs)g, Fats: \(meal.fats)g")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                    }
+                .padding()
+                .background(Color.black.opacity(0.2))
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 5, y: 5)
+                .padding(.horizontal, 20)
+
+                Button(action: addDietEntry) {
+                    Text("Add Entry")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 10)
                 }
-            }
-            .navigationTitle("Add Diet Entry")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        saveDietEntry()
-                    }
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
     }
-    
-    private func addMeal() {
-        // Convert user inputs to Int and Double where necessary
-        guard let caloriesInt = Int(calories),
-              let proteinDouble = Double(protein),
-              let carbsDouble = Double(carbs),
-              let fatsDouble = Double(fats) else { return }
 
-        let newMeal = Meal()
-        newMeal.name = mealName
-        newMeal.calories = caloriesInt
-        newMeal.protein = proteinDouble
-        newMeal.carbs = carbsDouble
-        newMeal.fats = fatsDouble
-
-        meals.append(newMeal)
-
-        // Clear input fields
-        mealName = ""
-        calories = ""
-        protein = ""
-        carbs = ""
-        fats = ""
+    private func addDietEntry() {
+        guard let calorieValue = Int(calories),
+              let proteinValue = Int(protein),
+              let carbsValue = Int(carbs),
+              let fatsValue = Int(fats) else {
+            return
+        }
+        
+        let meal = Meal()
+        meal.type = selectedMealType
+        meal.mealDescription = mealDescription
+        meal.calories = calorieValue
+        meal.protein = proteinValue
+        meal.carbs = carbsValue
+        meal.fats = fatsValue
+        
+        viewModel.addWeeklyDietEntry(startDate: DateUtils.currentDateString(), meals: [meal])
+        
+        dismiss()
     }
+}
 
-    private func saveDietEntry() {
-        guard let calorieTargetInt = Int(calorieTarget) else { return }
+// MARK: - GlassPicker and GlassTextField Components
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
+struct GlassPicker: View {
+    @Binding var selection: String
+    let options: [String]
+    let title: String
 
-        viewModel.addDietEntry(date: dateString, calorieTarget: calorieTargetInt, meals: meals)
-        presentationMode.wrappedValue.dismiss()
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+            Picker(selection: $selection, label: Text("")) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .background(Color.black.opacity(0.15))
+            .cornerRadius(10)
+            .padding(.top, 5)
+        }
     }
+}
+
+struct GlassTextField: View {
+    var placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundColor(.white.opacity(0.5))
+                    .padding(.leading, 10)
+            }
+            TextField("", text: $text)
+                .padding()
+                .background(Color.black.opacity(0.15))
+                .cornerRadius(10)
+                .foregroundColor(.white)
+        }
+    }
+}
+
+#Preview {
+    AddDietEntryView(viewModel: DietViewModel())
 }

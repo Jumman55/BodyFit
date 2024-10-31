@@ -9,84 +9,75 @@ import Foundation
 import RealmSwift
 
 class DietViewModel: ObservableObject {
-    private let realm = try! Realm()  // Initialize Realm instance
-    @Published var dietEntries: [DietEntry] = []  // Store DietEntry data for SwiftUI
-    private var user: User?  // User profile data
-
+    private let realm: Realm
+    @Published var dietEntries: [DietEntry] = []
+    private var user: User?
+    
     init() {
-        loadUserProfile()
-        loadDietEntriesFromRealm()
+        do {
+            // Configure Realm to delete the database if a migration is needed
+            var config = Realm.Configuration.defaultConfiguration
+            config.deleteRealmIfMigrationNeeded = true
+            Realm.Configuration.defaultConfiguration = config
+            
+            self.realm = try Realm()  // Safely initialize Realm
+            loadUserProfile()
+            loadDietEntriesFromRealm()
+        } catch {
+            fatalError("Error initializing Realm: \(error.localizedDescription)")
+        }
     }
-
-    // Load the user profile from Realm or set up a default if not present
+    
     private func loadUserProfile() {
         if let existingUser = realm.objects(User.self).first {
             self.user = existingUser
         } else {
-            // Initialize a default user profile if none exists
-            initializeDefaultUser()  // This method should be in RealmDatabaseSetup.swift
-            self.user = realm.objects(User.self).first  // Load the newly created default user
+            initializeDefaultUser()  // Check RealmDatabaseSetup.swift to ensure this creates a User
+            self.user = realm.objects(User.self).first
         }
     }
-
-    // Load diet entries from Realm
+    
     private func loadDietEntriesFromRealm() {
         let entries = realm.objects(DietEntry.self).sorted(byKeyPath: "date", ascending: true)
-        self.dietEntries = Array(entries)  // Convert Results to Array for SwiftUI compatibility
+        self.dietEntries = Array(entries)
     }
-
-    // Computed property to retrieve the calorie target from the user's preferences
+    
     var calorieTarget: Int {
-        return user?.preferences?.dailyCalorieGoal ?? 0  // Default to 0 if not set
+        user?.preferences?.dailyCalorieGoal ?? 2000  // Default to 2000 if not set or user is nil
     }
-
-    // Add a new DietEntry for the week without a calorie target in the entry itself
+    
     func addWeeklyDietEntry(startDate: String, meals: [Meal] = []) {
         let newDietEntry = DietEntry()
         newDietEntry.date = startDate
-        newDietEntry.meals.append(objectsIn: meals)  // Set initial meals if provided
-
-        try! realm.write {
-            realm.add(newDietEntry)
+        newDietEntry.meals.append(objectsIn: meals)
+        
+        do {
+            try realm.write {
+                realm.add(newDietEntry)
+            }
+            loadDietEntriesFromRealm()
+        } catch {
+            print("Error adding DietEntry to Realm: \(error.localizedDescription)")
         }
-
-        loadDietEntriesFromRealm()  // Refresh data after adding
     }
-
-    // Calculate total calories for a specific date
+    
     func totalCalories(for date: String) -> Int {
-        if let entry = dietEntries.first(where: { $0.date == date }) {
-            return entry.meals.reduce(0) { $0 + $1.calories }
-        }
-        return 0
+        dietEntries.first(where: { $0.date == date })?.meals.reduce(0) { $0 + $1.calories } ?? 0
     }
 
-    // Calculate total protein for a specific date
     func totalProtein(for date: String) -> Int {
-        if let entry = dietEntries.first(where: { $0.date == date }) {
-            return entry.meals.reduce(0) { $0 + $1.protein }
-        }
-        return 0
+        dietEntries.first(where: { $0.date == date })?.meals.reduce(0) { $0 + $1.protein } ?? 0
     }
 
-    // Calculate total carbs for a specific date
     func totalCarbs(for date: String) -> Int {
-        if let entry = dietEntries.first(where: { $0.date == date }) {
-            return entry.meals.reduce(0) { $0 + $1.carbs }
-        }
-        return 0
+        dietEntries.first(where: { $0.date == date })?.meals.reduce(0) { $0 + $1.carbs } ?? 0
     }
 
-    // Calculate total fats for a specific date
     func totalFats(for date: String) -> Int {
-        if let entry = dietEntries.first(where: { $0.date == date }) {
-            return entry.meals.reduce(0) { $0 + $1.fats }
-        }
-        return 0
+        dietEntries.first(where: { $0.date == date })?.meals.reduce(0) { $0 + $1.fats } ?? 0
     }
 
-    // Retrieve day name for a specific DietEntry's date
     func dayName(for entry: DietEntry) -> String {
-        return DateUtils.dayName(from: entry.date)
+        DateUtils.dayName(from: entry.date)
     }
 }

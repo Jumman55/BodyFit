@@ -11,9 +11,9 @@ struct DailySummary: Identifiable {
     let id = UUID()
     let day: String  // e.g., "Monday"
     let calories: Int
-    let protein: Double
-    let carbs: Double
-    let fats: Double
+    let protein: Int
+    let carbs: Int
+    let fats: Int
     let workoutsCompleted: Bool
 }
 
