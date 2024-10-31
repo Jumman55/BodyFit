@@ -5,20 +5,20 @@
 //  Created by Jumman Hossen on 28/10/24.
 //
 
+import Foundation
 import RealmSwift
 
 class Meal: EmbeddedObject, Identifiable {
-    @Persisted var id = ObjectId.generate()  // Unique identifier for each meal
-    @Persisted var name: String
+    @Persisted var type: String
+    @Persisted var mealDescription: String
     @Persisted var calories: Int
-    @Persisted var protein: Double
-    @Persisted var carbs: Double
-    @Persisted var fats: Double
+    @Persisted var protein: Int
+    @Persisted var carbs: Int
+    @Persisted var fats: Int
 }
 
 class DietEntry: Object, Identifiable {
-    @Persisted(primaryKey: true) var id: ObjectId  // Unique identifier for each entry
-    @Persisted var date: String                   // Date in "YYYY-MM-DD" format
-    @Persisted var calorieTarget: Int             // Daily calorie target
-    @Persisted var meals = List<Meal>()           // List of meals in a day
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted var date: String                    // e.g., "2024-10-28"
+    @Persisted var meals = List<Meal>()
 }
